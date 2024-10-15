@@ -131,6 +131,8 @@ const PromptComponent: React.FC = () => {
         ...prevHistory.slice(0, prevHistory.length - 1),
         <div key={prevHistory.length}>{formatResponse(data.message)}</div>,
       ]);
+      // Clear the prompt input after submission
+      setPrompt('');
     } catch (error) {
       console.error('Error:', error);
       setHistory((prevHistory) => [
@@ -138,9 +140,6 @@ const PromptComponent: React.FC = () => {
         <p key={prevHistory.length}>Error: Failed to fetch response from server</p>,
       ]);
     }
-
-    // Clear the prompt input after submission
-    setPrompt('');
   };
 
   return (
