@@ -1,0 +1,81 @@
+/* PromptComponent.css */
+
+/* Message container with a fixed height and scrolling */
+.message-container {
+    border: 1px solid #ccc;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+}
+
+.history-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 500px; /* Set your desired height */
+    overflow-y: auto; /* Enable vertical scrolling */
+    padding: 10px;
+}
+
+
+/* User messages - aligned to the right */
+.user-message {
+    background-color: #f0f0f0;
+    padding: 10px;
+    border-radius: 15px;
+    max-width: 60%;
+    width: fit-content;
+    margin: 5px 0;
+    text-align: left;
+    word-wrap: break-word;
+    align-self: flex-end; /* Aligns the message to the right */
+    float: right; /* Ensures the message box stays on the right */
+}
+
+/* LLM messages - aligned to the left */
+.llm-message {
+    background-color: #e0e0e0;
+    padding: 10px;
+    border-radius: 15px;
+    max-width: 60%;
+    width: fit-content;
+    margin: 5px 0;
+    text-align: left;
+    word-wrap: break-word;
+    align-self: flex-start; /* Aligns the message to the left */
+}
+
+
+/* Prompt input styling */
+.prompt-input {
+    width: calc(100% - 100px);
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+    margin-bottom: 5px;
+}
+.prompt-input:focus {
+    border-color: #a1a1a1; /* Use a lighter gray or any color you prefer */
+    outline: none; /* Removes the default blue outline */
+}
+
+/* Button styling for send-button class */
+.send-button {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 8px;
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.2s;
+}
+
+.send-button:disabled {
+    background-color: #a1a1a1;
+    cursor: not-allowed;
+}
+
+.send-button:hover:not(:disabled) {
+    background-color: #0056b3;
+}
