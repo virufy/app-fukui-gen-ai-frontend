@@ -1,4 +1,5 @@
-import React, { useState, ChangeEvent, FormEvent } from 'react';
+import React, { useState, useEffect, useRef, ChangeEvent, FormEvent } from 'react';
+import './prompt.css'; // Import the CSS file
 
 interface ApiResponse {
   message: string;
@@ -31,14 +32,14 @@ const formatResponse = (message: string) => {
           );
         }
 
-        // Replace "**text**" with bold formatting using a regular expression for non-bullet lines
+        // Replace "**text**" with bold formatting for non-bullet lines
         const boldText = trimmedLine.replace(/\*\*(.*?)\*\*/g, (_, p1) => {
           return `<strong>${p1}</strong>`;
         });
 
         // Return the formatted line as HTML
         return (
-          <p key={index} dangerouslySetInnerHTML={{ __html: boldText }} />
+          <div key={index} dangerouslySetInnerHTML={{ __html: boldText }} />
         );
       })}
     </div>
@@ -46,11 +47,27 @@ const formatResponse = (message: string) => {
 };
 
 const PromptComponent: React.FC = () => {
-  const [ageInput, setAge] = useState<string>('');       // State for storing the user's age input 
-  const [hobbyInput, setHobby] = useState<string>('');   // State for storing the user's hobby input
+  const [ageInput, setAge] = useState<string>(''); // State for storing the user's age input
+  const [hobbyInput, setHobby] = useState<string>(''); // State for storing the user's hobby input
+  const [otherInput, setOtherInfo] = useState<string>(''); // State for storing the user's hobby input
   const [promptInput, setPrompt] = useState<string>(''); // State for storing the user's prompt
   const [sessionId, setSessionId] = useState<string | null>(null); // State for storing the session ID
-  const [history, setHistory] = useState<JSX.Element[]>([]);  // State for storing the conversation history
+  const [history, setHistory] = useState<JSX.Element[]>([]); // State for storing the conversation history
+  const [loading, setLoading] = useState<boolean>(false); // State for tracking loading status
+
+  const messageContainerRef = useRef<HTMLDivElement | null>(null);
+
+  // Function to scroll to the bottom of the message container
+  const scrollToBottom = () => {
+    if (messageContainerRef.current) {
+      messageContainerRef.current.scrollTop = messageContainerRef.current.scrollHeight;
+    }
+  };
+  // Call scrollToBottom whenever the history changes
+  useEffect(() => {
+    scrollToBottom();
+  }, [history]);
+
 
   // Function to handle input change
   const handleAgeInput = (e: ChangeEvent<HTMLInputElement>): void => {
@@ -59,6 +76,9 @@ const PromptComponent: React.FC = () => {
   const handleHobbyInput = (e: ChangeEvent<HTMLInputElement>): void => {
     setHobby(e.target.value);
   };
+  const handleOtherInput = (e: ChangeEvent<HTMLInputElement>): void => {
+    setOtherInfo(e.target.value);
+  };
   const handlePromptInput = (e: ChangeEvent<HTMLInputElement>): void => {
     setPrompt(e.target.value);
   };
@@ -66,15 +86,16 @@ const PromptComponent: React.FC = () => {
   // Function to handle form submission for initial user info
   const handleUserInfo = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
+    setLoading(true);
 
     try {
-      setHistory((prevHistory) => [...prevHistory, <p key={prevHistory.length}>LLM: Loading...</p>]);
+      setHistory((prevHistory) => [...prevHistory, <div key={prevHistory.length} className="llm-message">Typing...</div>]);
       const res = await fetch('http://localhost:8080/api/prompt', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ firstPost: true, age: ageInput, hobby: hobbyInput }),
+        body: JSON.stringify({ firstPost: true, age: ageInput, hobby: hobbyInput, other: otherInput }),
       });
 
       if (!res.ok) {
@@ -89,7 +110,7 @@ const PromptComponent: React.FC = () => {
       // Update the history with the formatted response
       setHistory((prevHistory) => [
         ...prevHistory.slice(0, prevHistory.length - 1),
-        <div key={prevHistory.length}>LLM: {formatResponse(data.message)}</div>,
+        <div key={prevHistory.length} className="llm-message">{formatResponse(data.message)}</div>,
       ]);
     } catch (error) {
       console.error('Error:', error);
@@ -97,19 +118,22 @@ const PromptComponent: React.FC = () => {
         ...prevHistory.slice(0, prevHistory.length - 1),
         <p key={prevHistory.length}>Error: Failed to fetch response from server</p>,
       ]);
+    } finally {
+      setLoading(false); // Set loading to false
     }
   };
 
   // Function to handle form submission for follow-up prompts
   const handleUserPrompt = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
+    setLoading(true); // Set loading to true
 
     try {
       // Add the user's prompt to the history immediately
       setHistory((prevHistory) => [
-        ...prevHistory, 
-        <p key={prevHistory.length}>User: {promptInput}</p>,
-        <p key={prevHistory.length + 1}>LLM: Loading...</p>,
+        ...prevHistory,
+        <div key={prevHistory.length} className="user-message">{promptInput}</div>,
+        <div key={prevHistory.length + 1} className="llm-message">Typing...</div>,
       ]);
 
       const res = await fetch('http://localhost:8080/api/prompt', {
@@ -129,7 +153,7 @@ const PromptComponent: React.FC = () => {
       // Replace the "Loading..." message with the formatted response
       setHistory((prevHistory) => [
         ...prevHistory.slice(0, prevHistory.length - 1),
-        <div key={prevHistory.length}>{formatResponse(data.message)}</div>,
+        <div key={prevHistory.length} className="llm-message">{formatResponse(data.message)}</div>,
       ]);
       // Clear the prompt input after submission
       setPrompt('');
@@ -139,49 +163,62 @@ const PromptComponent: React.FC = () => {
         ...prevHistory.slice(0, prevHistory.length - 1),
         <p key={prevHistory.length}>Error: Failed to fetch response from server</p>,
       ]);
+    } finally {
+      setLoading(false); // Set loading to false
     }
   };
 
   return (
     <div>
-      <h1>Initial User Information</h1>
+      <h2>Initial User Information</h2>
       <form onSubmit={handleUserInfo}>
         <input
           type="number"
           value={ageInput}
           onChange={handleAgeInput}
-          placeholder="Enter your Age"
+          placeholder="Enter User Age"
           required
         />
         <input
           type="text"
           value={hobbyInput}
           onChange={handleHobbyInput}
-          placeholder="Enter your hobby"
+          placeholder="Enter User Hobby"
           required
         />
-        <button type="submit">Send</button>
+        <input
+          type="text"
+          value={otherInput}
+          onChange={handleOtherInput}
+          placeholder="Enter Other User Info"
+          required
+        />
+        <button type="submit" disabled={loading}>Send</button>
       </form>
-
-      <div>
-        <h2>Conversation:</h2>
-        <div style={{ textAlign: 'left' }}>
+      <div>The above form should be hidden from the user when deployed.
+        The form is used to send any user info that we collect prior to accessing the chatbot below (currently asks for "age", "hobby", and "other user info"). 
+        The information from this form will be used to initiate a relevant conversation with the user for tour guidance.</div>
+      <br/>
+      <h2>Chatbot</h2>
+      <div className='message-container'>
+        <div className="history-container" ref={messageContainerRef}>
           {history.map((entry, index) => (
             <div key={index}>{entry}</div>
           ))}
         </div>
-      </div>
 
-      <form onSubmit={handleUserPrompt}>
-        <input
-          type="text"
-          value={promptInput}
-          onChange={handlePromptInput}
-          placeholder="Enter your prompt"
-          required
-        />
-        <button type="submit">Send</button>
-      </form>
+        <form onSubmit={handleUserPrompt}>
+          <input
+            type="text"
+            className="prompt-input"
+            value={promptInput}
+            onChange={handlePromptInput}
+            placeholder="メッセージやご質問を入力してください"
+            required
+          />
+          <button type="submit" className="send-button" disabled={loading}>送信</button>
+        </form>
+      </div>
     </div>
   );
 };
