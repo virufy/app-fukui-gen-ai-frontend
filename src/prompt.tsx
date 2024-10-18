@@ -148,7 +148,9 @@ const PromptComponent: React.FC = () => {
       if (!res.ok) {
         throw new Error('Failed to fetch data');
       }
-
+      
+      // Clear the prompt input after submission
+      setPrompt('');
       const data: ApiResponse = await res.json();
 
       // Replace the "Loading..." message with the formatted response
@@ -156,8 +158,6 @@ const PromptComponent: React.FC = () => {
         ...prevHistory.slice(0, prevHistory.length - 1),
         <div key={prevHistory.length} className="llm-message">{formatResponse(data.message)}</div>,
       ]);
-      // Clear the prompt input after submission
-      setPrompt('');
     } catch (error) {
       console.error('Error:', error);
       setHistory((prevHistory) => [
