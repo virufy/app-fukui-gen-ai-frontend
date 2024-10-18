@@ -5,6 +5,7 @@ interface ApiResponse {
   message: string;
   sessionId?: string;
 }
+const BACKEND_URL = "https://python-backend-28440209445.us-central1.run.app";
 
 // Utility function to parse the response and format it properly
 const formatResponse = (message: string) => {
@@ -90,7 +91,7 @@ const PromptComponent: React.FC = () => {
 
     try {
       setHistory((prevHistory) => [...prevHistory, <div key={prevHistory.length} className="llm-message">Typing...</div>]);
-      const res = await fetch('http://localhost:8080/api/prompt', {
+      const res = await fetch(`${BACKEND_URL}/api/prompt`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -136,7 +137,7 @@ const PromptComponent: React.FC = () => {
         <div key={prevHistory.length + 1} className="llm-message">Typing...</div>,
       ]);
 
-      const res = await fetch('http://localhost:8080/api/prompt', {
+      const res = await fetch(`${BACKEND_URL}/api/prompt`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -4,6 +4,8 @@ import { Trans, useTranslation } from 'react-i18next';
 import { useStateMachine } from 'little-state-machine';
 import usePortal from 'react-useportal';
 
+// import chatbot
+import PromptComponent from 'prompt';
 // Form
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers';
@@ -242,6 +244,7 @@ const Step1 = (p: Wizard.StepProps) => {
 
   return (
     <>
+      <PromptComponent/>
       <WelcomeStyledForm>
         <HeaderImageContainer>
           <HeaderImage
