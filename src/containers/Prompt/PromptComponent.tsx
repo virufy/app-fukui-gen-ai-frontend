@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, ChangeEvent, FormEvent } from 'react';
-import './prompt.css'; // Import the CSS file
+import './PromptComponent.css'; // Import the CSS file
 
 interface ApiResponse {
   message: string;
